@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  HttpCode,
   HttpException,
   HttpStatus,
   Patch,
@@ -28,11 +27,10 @@ export class UserController {
   @Roles('user')
   @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Patch('/profile/update')
-  @HttpCode(HttpStatus.OK)
   async updateProfile(@Req() req: Request, @Body() profileDto: ProfileDto) {
     try {
       const user = req.user;
-      await this.userService.updateProfile(user['sub'], profileDto);
+      return await this.userService.updateProfile(user['sub'], profileDto);
     } catch (error) {
       return new HttpException(
         `Error: ${error}`,

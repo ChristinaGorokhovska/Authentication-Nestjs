@@ -48,7 +48,7 @@ export class AuthController {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
 
-      return { message: 'Email is sent' };
+      return sent;
     } catch (error) {
       return new HttpException(
         `Error: ${error}`,
@@ -58,11 +58,7 @@ export class AuthController {
   }
 
   @Post('/signin')
-  @HttpCode(HttpStatus.OK)
-  async signin(
-    @Body() authDto: AuthDto,
-    @Res({ passthrough: true }) response: Response,
-  ) {
+  async signin(@Body() authDto: AuthDto) {
     try {
       const verifiedUser = await this.authService.verifyLogin(authDto);
 
@@ -77,7 +73,7 @@ export class AuthController {
         tokens.refreshToken,
       );
 
-      return { tokens, user: verifiedUser.userId };
+      return { tokens };
     } catch (error) {
       return new HttpException(
         `Error: ${error}`,
@@ -87,11 +83,9 @@ export class AuthController {
   }
 
   @Get('/verification/:token')
-  @HttpCode(HttpStatus.OK)
   async verifyEmail(@Param() params) {
     try {
-      await this.authService.verifyEmail(params.token);
-      return new HttpException('User is verified', HttpStatus.OK);
+      return await this.authService.verifyEmail(params.token);
     } catch (error) {
       return new HttpException(
         `Error: ${error}`,
@@ -101,7 +95,6 @@ export class AuthController {
   }
 
   @Get('/re-verification/:email/:userId')
-  @HttpCode(HttpStatus.OK)
   async generateVerificationProcess(@Param() params) {
     try {
       await this.authService.generateEmailToken(params.userId);
@@ -116,6 +109,7 @@ export class AuthController {
           'Verification Letter is not sent',
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
+      return verificationEmail;
     } catch (error) {
       return new HttpException(
         `Error: ${error}`,
@@ -163,7 +157,7 @@ export class AuthController {
         );
       }
 
-      return new HttpException('Password is changed', HttpStatus.OK);
+      return passwordChanged;
     } catch (error) {
       return new HttpException(
         `Error: ${error}`,
@@ -174,7 +168,6 @@ export class AuthController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/logout')
-  @HttpCode(HttpStatus.OK)
   async logout(@Req() req: Request) {
     try {
       const user = req.user;
@@ -192,7 +185,7 @@ export class AuthController {
   async refreshTokens(@Req() req: Request) {
     try {
       const user = req.user;
-      return this.jwtTokenService.refreshTokens(
+      return await this.jwtTokenService.refreshTokens(
         user['sub'],
         user['refreshToken'],
       );
@@ -221,6 +214,7 @@ export class AuthController {
           'Verification Letter is not sent',
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
+      return forgotPasswordEmail;
     } catch (error) {
       return new HttpException(
         `Error: ${error}`,

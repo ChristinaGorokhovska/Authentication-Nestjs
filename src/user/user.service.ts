@@ -44,7 +44,6 @@ export class UserService {
       throw new HttpException('User is not found', HttpStatus.NOT_FOUND);
 
     foundUser.avatar = `${process.env.ROOT_IMAGE}/${fileUrl}`;
-    await foundUser.save();
-    return foundUser;
+    return await foundUser.save();
   }
 }

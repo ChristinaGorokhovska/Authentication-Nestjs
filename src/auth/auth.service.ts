@@ -5,7 +5,6 @@ import { IUser } from 'src/user/interfaces/user.interface';
 import { IEmailToken } from './interfaces/auth.interface';
 import { AuthDto } from './dto/auth.dto';
 import * as argon from 'argon2';
-import { JwtTokenService } from './jwt.service';
 import { IEmailInfo } from './interfaces/emailInfo.interface';
 import * as nodemailer from 'nodemailer';
 
@@ -17,7 +16,6 @@ export class AuthService {
     private readonly emailTokenModel: Model<IEmailToken>,
     @InjectModel('PasswordToken')
     private readonly passwordTokenModel: Model<IEmailToken>,
-    private readonly jwtTokenService: JwtTokenService,
   ) {}
 
   async generateEmailToken(userId: Types.ObjectId) {
@@ -45,20 +43,19 @@ export class AuthService {
 
   async sendEmail(
     MAIL_HOST: string,
-    MAIL_PORT: string,
-    MAIL_SECURE: string,
+    MAIL_PORT: number,
+    MAIL_SECURE: boolean,
     MAIL_USER: string,
     MAIL_PASS: string,
     emailInfo: IEmailInfo,
   ) {
-    let account = await nodemailer.createTestAccount();
     const transporter = nodemailer.createTransport({
-      host: account.smtp.host,
-      port: account.smtp.port,
-      secure: account.smtp.secure,
+      host: MAIL_HOST,
+      port: MAIL_PORT,
+      secure: MAIL_SECURE,
       auth: {
-        user: account.user,
-        pass: account.pass,
+        user: MAIL_USER,
+        pass: MAIL_PASS,
       },
     });
 
@@ -66,9 +63,8 @@ export class AuthService {
       resolve,
       reject,
     ) {
-      return await transporter.sendMail(emailInfo, async (error, data) => {
+      return transporter.sendMail(emailInfo, async (error, data) => {
         if (error) return reject(false);
-
         return resolve(true);
       });
     });
@@ -97,8 +93,8 @@ export class AuthService {
 
     return await this.sendEmail(
       process.env.MAIL_HOST,
-      process.env.MAIL_PORT,
-      process.env.MAIL_SECURE,
+      Number(process.env.MAIL_PORT),
+      Boolean(process.env.MAIL_SECURE),
       process.env.MAIL_USER,
       process.env.MAIL_PASS,
       emailInfo,
@@ -201,8 +197,8 @@ export class AuthService {
     };
     return await this.sendEmail(
       process.env.MAIL_HOST,
-      process.env.MAIL_PORT,
-      process.env.MAIL_SECURE,
+      Number(process.env.MAIL_PORT),
+      Boolean(process.env.MAIL_SECURE),
       process.env.MAIL_USER,
       process.env.MAIL_PASS,
       emailInfo,

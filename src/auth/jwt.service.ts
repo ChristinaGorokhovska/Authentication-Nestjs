@@ -36,7 +36,7 @@ export class JwtTokenService {
 
   async updateRefreshToken(userId: Types.ObjectId, newToken: string) {
     const hashedToken = await argon.hash(newToken);
-    await this.userModel.findOneAndUpdate(
+    return await this.userModel.findOneAndUpdate(
       { _id: userId },
       { refreshToken: { token: hashedToken } },
     );
