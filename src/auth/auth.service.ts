@@ -102,9 +102,6 @@ export class AuthService {
   }
 
   async verifyEmail(token: string) {
-    console.log(token);
-    const all = await this.emailTokenModel.find({});
-    console.log(all);
     const foundToken = await this.emailTokenModel
       .findOne({ token: token })
       .exec();
@@ -118,6 +115,7 @@ export class AuthService {
       throw new HttpException('User is not found', HttpStatus.NOT_FOUND);
 
     foundUser.valid = true;
+    await this.emailTokenModel.findOneAndDelete({ token: token });
     return await foundUser.save();
   }
 
@@ -220,6 +218,7 @@ export class AuthService {
       throw new HttpException('User is not found', HttpStatus.NOT_FOUND);
 
     foundUser.password = await argon.hash(password);
+    await this.passwordTokenModel.findOneAndDelete({ userId: userId });
     return !!(await foundUser.save());
   }
 

@@ -2,14 +2,12 @@ import {
   Body,
   Controller,
   Get,
-  HttpCode,
   HttpException,
   HttpStatus,
   Param,
   Post,
   Put,
   Req,
-  Res,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -17,11 +15,10 @@ import { NewUserDto } from 'src/user/dto/newUser.dto';
 import { UserService } from 'src/user/user.service';
 import { AuthDto } from './dto/auth.dto';
 import { JwtTokenService } from './jwt.service';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { PasswordDto } from './dto/password.dto';
 import { Types } from 'mongoose';
-import { Roles } from './decorators/roles.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -197,8 +194,6 @@ export class AuthController {
     }
   }
 
-  @Roles('user')
-  @UseGuards(AuthGuard('jwt'))
   @Post('/password/forgot/:userId/:email')
   async sendEmailForgotPassword(@Param() params) {
     try {
